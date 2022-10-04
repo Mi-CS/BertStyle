@@ -6,9 +6,9 @@ from tqdm import tqdm
 
 NLTK_NOUNS_TAGS = ["NN", "NNS", "NNP", "NNPS"]
 
-def build_chunks(slist: list,
-                    chunk_length: Optional[int] = 3,
-                    max_sent: Optional[int] = None) -> list:
+def _build_chunks(slist: list,
+                 chunk_length: Optional[int] = 3,
+                 max_sent: Optional[int] = None) -> list:
     """
     Group sentences into chunks of 'chunk_length' consecutive
     sentences. 
@@ -38,7 +38,7 @@ def build_chunks(slist: list,
     chunks = [" ".join(chunk) for chunk in chunks]
     return chunks
 
-def gather_nouns(chunk_tags: list,
+def _gather_nouns(chunk_tags: list,
                  pos_tags: Optional[list] = NLTK_NOUNS_TAGS) -> list: 
     """
     Gather all the nouns in a tagged chunk employing the
@@ -55,17 +55,13 @@ def gather_nouns(chunk_tags: list,
 
 
 
-def build_dataset(doc_chunks: list,
+def _build_dataset_from_chunks(doc_chunks: list,
                   masking_percentage: Optional[float] = 0, 
                   max_pairs_per_doc: Optional[int] = None,
                   show_progress_bar: bool = True) -> list: 
     """
     Output a list of masked positive pairs from a list of documents made of a 
-    list of chunks. The pairs are built by randomly drawing pairs of chunks
-    within each document without repetition. The output is flattened and each entry
-    is a positive pair, so there is no separation between documents positive pairs. 
-    Note, however, that it is not randomized, and thus all positive pairs of 
-    document 1 will appear before all document 2 positive pairs, and so on. 
+    list of chunks.
     
         Parameters: 
             doc_chunks (list): list of lists, each entry representing a 
@@ -103,7 +99,7 @@ def build_dataset(doc_chunks: list,
             for chunk in chunks:
                 # Get noun tags for the chunk
                 nouns = nltk.pos_tag(nltk.tokenize.word_tokenize(chunk))
-                nouns = gather_nouns(nouns)
+                nouns = _gather_nouns(nouns)
 
                 # Sample nouns in chunk to be masked
                 nouns = random.sample(nouns,
@@ -121,3 +117,48 @@ def build_dataset(doc_chunks: list,
                           for i in range(0, pairs_per_doc*2, 2)]
     
     return positive_pairs
+
+
+
+def build_dataset(documents: list,
+                  chunk_length: Optional[int] = 3,
+                  max_sent: Optional[int] = None,
+                  masking_percentage: Optional[float] = 0, 
+                  max_pairs_per_doc: Optional[int] = None,
+                  show_progress_bar: bool = True) -> list: 
+    """
+    Returns a list of masked positive pairs from a list of documents made of a 
+    list of sentences. First, groups sentences into chunks of 'chunk_length' consecutive
+    sentences. Then the pairs are built by randomly drawing pairs of chunks
+    within each document without repetition. The output is flattened and each entry
+    is a positive pair, so there is no separation between documents positive pairs. 
+    Note, however, that it is not randomized, and thus all positive pairs of 
+    document 1 will appear before all document 2 positive pairs, and so on. 
+    
+        Parameters: 
+            documents (list of str): List of documents. Each document is itself
+                a list of its sentences
+            chunk_length (int) (def. 3): Length of each chunks.
+            max_sent (int) (def. None): Maximum number of sentences
+                to take into account for the chunks. Default None,
+                which takes all sentences. 
+            masking_percentage (float) (def. 0): float between 0 and 1 indicating
+                the percentage of noun masking to apply. By default it does not
+                apply any.
+            max_pairs_per_doc (int) (def. None): maximum number of positive pairs
+                to produce per document. By default builds document_length // 2 
+                pairs. If the number given is bigger than the default value, it
+                ignores it.
+            show_progress_bar (bool) (def. True): Whether to show a progress bar.
+
+        Returns: 
+            positive_pairs (list): list of positive pairs. 
+    """
+
+
+    doc_chunks = [_build_chunks(doc, chunk_length, max_sent) for doc in documents]
+
+    dataset = _build_dataset_from_chunks(doc_chunks, masking_percentage, show_progress_bar)
+    
+    return dataset
+                  

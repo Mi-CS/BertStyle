@@ -51,7 +51,7 @@ class Similarity(nn.Module):
 
 
 
-def init_model(device: torch.device):
+def init_model(device):
     """
     Initialize the model using a pretrained Bert base uncased 
     from the transformers (HuggingFace) library. 
@@ -65,9 +65,8 @@ def init_model(device: torch.device):
     for param in model.bert.parameters(): 
         param.requires_grad = True 
     
-    # Use all GPUs
     if device.type == "cuda": 
-        model = nn.DataParallel(model)
+        model = nn.DataParallel(model) # Use all GPUs
+        model.to(device)
     
-    model.to(device)
     return model

@@ -1,5 +1,4 @@
 import torch
-import torch.nn as nn
 from model import Similarity
 from tqdm import tqdm
 from torch.utils.data import DataLoader
@@ -10,10 +9,13 @@ def train_epoch(model,
             dataloader,
             optimizer,
             criterion,
-            batch_size, 
             device,
             print_each, 
             disable_progress_bar): 
+
+    """
+    Trains the model using Contrastive Loss. 
+    """
 
     sim = Similarity(temp = 0.5)
     num_batches = len(dataloader)
@@ -55,13 +57,13 @@ def train_epoch(model,
         # correspondent positive pair
         cos_sim = sim(z1.unsqueeze(1), z2.unsqueeze(0))
 
-        # Build labels and compute loss.
+        # Build labels and compute contrastive loss.
         # Positive pairs lay in the diagonal
         # of cos_sim, so we can just assign them labels 
         # and use Cross Entropy. 
         labels = torch.arange(cos_sim.size(0)).long().to(device)
         loss = criterion(cos_sim, labels)
-        print(loss)
+
         # Backward pass + optimize
         running_loss += loss.item()
         loss.backward()
