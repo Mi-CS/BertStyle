@@ -4,18 +4,18 @@ from model import Similarity
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 
-def train_epoch(model, tokenizer, dataset,
-                optimizer, criterion,
-                batch_size, 
-                device,
-                print_each, 
-                disable_progress_bar): 
+
+def train_epoch(model,
+            tokenizer,
+            dataloader,
+            optimizer,
+            criterion,
+            batch_size, 
+            device,
+            print_each, 
+            disable_progress_bar): 
 
     sim = Similarity(temp = 0.5)
-
-    dataloader = DataLoader(dataset, 
-                    batch_size = batch_size,
-                    shuffle = True)
     num_batches = len(dataloader)
 
     max_tokens = 512
@@ -35,7 +35,7 @@ def train_epoch(model, tokenizer, dataset,
         tok2_input = tok2.input_ids[:, :max_tokens]
         tok2_att = tok2.attention_mask[:, :max_tokens]        
 
-        #To device
+        # To device
         tok1_input = tok1_input.to(device)
         tok1_att = tok1_att.to(device)
         tok2_input = tok2_input.to(device)
@@ -61,17 +61,12 @@ def train_epoch(model, tokenizer, dataset,
         # and use Cross Entropy. 
         labels = torch.arange(cos_sim.size(0)).long().to(device)
         loss = criterion(cos_sim, labels)
-
+        print(loss)
         # Backward pass + optimize
         running_loss += loss.item()
         loss.backward()
         optimizer.step()
-
         # Print train loss
         if (i+1) % print_each == 0: 
-            print(f"Train loss for iterations {i+1-print_each} - {i+1}: {running_loss/print_each}")
+            print(f"Mean train loss for iterations {i+1-print_each} - {i+1}: {running_loss/print_each}")
             running_loss = 0
-
-
-
-
