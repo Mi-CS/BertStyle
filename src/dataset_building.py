@@ -158,7 +158,9 @@ def build_dataset(documents: list,
 
     doc_chunks = [_build_chunks(doc, chunk_length, max_sent) for doc in documents]
 
-    dataset = _build_dataset_from_chunks(doc_chunks, masking_percentage, show_progress_bar)
-    
+    dataset = _build_dataset_from_chunks(doc_chunks,
+                  masking_percentage,
+                  max_pairs_per_doc,
+                  show_progress_bar)
     return dataset
                   
