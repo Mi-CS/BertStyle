@@ -1,4 +1,4 @@
-# Unsupervised Contrastive Learning of Style using a pre-trained BERT
+# Self-Supervised Contrastive Learning of Style Representations using a pre-trained BERT
 
 ### ***[Under construction]***
 
