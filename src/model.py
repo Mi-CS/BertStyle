@@ -30,11 +30,13 @@ class BertMLP(nn.Module):
         self.bert = bert_model
         self.mlp = mlp
     
-    def forward(self, x_input, x_att):
+    def forward(self, x_input, x_att, return_lhs = False):
         x = self.bert(input_ids = x_input, attention_mask = x_att)
-        x = x.last_hidden_state[:, 0]
-        x = self.mlp(x)
-        return x        
+        lhs = x.last_hidden_state[:, 0] # [CLS] repr. of last layer
+        if return_lhs: 
+            return lhs
+        out = self.mlp(lhs)
+        return out
     
 class Similarity(nn.Module):
     """

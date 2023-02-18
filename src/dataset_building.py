@@ -28,7 +28,7 @@ def _build_chunks(slist: list,
     slist = slist[:max_sent] if max_sent else slist
     
     total_length = len(slist)
-    chunks =  [slist[i:i+3] for i in 
+    chunks =  [slist[i:i+chunk_length] for i in 
                 range(0, total_length, chunk_length)]
     
     # Remove last chunk if it is too small
